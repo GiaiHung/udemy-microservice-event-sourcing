@@ -1,5 +1,6 @@
 package com.eazybytes.accounts.service.impl;
 
+import com.eazybytes.accounts.command.event.AccountUpdatedEvent;
 import com.eazybytes.accounts.constants.AccountsConstants;
 import com.eazybytes.accounts.dto.AccountsDto;
 import com.eazybytes.accounts.entity.Accounts;
@@ -12,7 +13,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 @AllArgsConstructor
@@ -21,31 +21,16 @@ public class AccountsServiceImpl  implements IAccountsService {
     private AccountsRepository accountsRepository;
 
     /**
-     * @param mobileNumber - String
+     * @param accounts - Accounts
      */
     @Override
-    public void createAccount(String mobileNumber) {
-        Optional<Accounts> optionalAccounts= accountsRepository.findByMobileNumberAndActiveSw(mobileNumber,
+    public void createAccount(Accounts accounts) {
+        Optional<Accounts> optionalAccounts= accountsRepository.findByMobileNumberAndActiveSw(accounts.getMobileNumber(),
                 AccountsConstants.ACTIVE_SW);
         if(optionalAccounts.isPresent()){
-            throw new AccountAlreadyExistsException("Account already registered with given mobileNumber "+mobileNumber);
+            throw new AccountAlreadyExistsException("Account already registered with given mobileNumber "+ accounts.getMobileNumber());
         }
-        accountsRepository.save(createNewAccount(mobileNumber));
-    }
-
-    /**
-     * @param mobileNumber - String
-     * @return the new account details
-     */
-    private Accounts createNewAccount(String mobileNumber) {
-        Accounts newAccount = new Accounts();
-        newAccount.setMobileNumber(mobileNumber);
-        long randomAccNumber = 1000000000L + new Random().nextInt(900000000);
-        newAccount.setAccountNumber(randomAccNumber);
-        newAccount.setAccountType(AccountsConstants.SAVINGS);
-        newAccount.setBranchAddress(AccountsConstants.ADDRESS);
-        newAccount.setActiveSw(AccountsConstants.ACTIVE_SW);
-        return newAccount;
+        accountsRepository.save(accounts);
     }
 
     /**
@@ -57,36 +42,31 @@ public class AccountsServiceImpl  implements IAccountsService {
         Accounts account = accountsRepository.findByMobileNumberAndActiveSw(mobileNumber, AccountsConstants.ACTIVE_SW)
                 .orElseThrow(() -> new ResourceNotFoundException("Account", "mobileNumber", mobileNumber)
         );
-        AccountsDto accountsDto = AccountsMapper.mapToAccountsDto(account, new AccountsDto());
-        return accountsDto;
+        return AccountsMapper.mapToAccountsDto(account, new AccountsDto());
     }
 
     /**
-     * @param accountsDto - AccountsDto Object
-     * @return boolean indicating if the update of Account details is successful or not
+     * @param accountUpdatedEvent - AccountUpdatedEvent Object
      */
     @Override
-    public boolean updateAccount(AccountsDto accountsDto) {
-        Accounts account = accountsRepository.findByMobileNumberAndActiveSw(accountsDto.getMobileNumber(),
+    public void updateAccount(AccountUpdatedEvent accountUpdatedEvent) {
+        Accounts account = accountsRepository.findByMobileNumberAndActiveSw(accountUpdatedEvent.getMobileNumber(),
                 AccountsConstants.ACTIVE_SW).orElseThrow(() -> new ResourceNotFoundException("Account", "mobileNumber",
-                accountsDto.getMobileNumber()));
-        AccountsMapper.mapToAccounts(accountsDto, account);
-        accountsRepository.save(account);
-        return  true;
+                accountUpdatedEvent.getMobileNumber()));
+        Accounts accountsUpdated = AccountsMapper.mapToEventUpdateAccounts(accountUpdatedEvent, account);
+        accountsRepository.save(accountsUpdated);
     }
 
     /**
      * @param accountNumber - Input Account Number
-     * @return boolean indicating if the delete of Account details is successful or not
      */
     @Override
-    public boolean deleteAccount(Long accountNumber) {
+    public void deleteAccount(Long accountNumber) {
         Accounts account = accountsRepository.findById(accountNumber).orElseThrow(
                 () -> new ResourceNotFoundException("Account", "accountNumber", accountNumber.toString())
         );
         account.setActiveSw(AccountsConstants.IN_ACTIVE_SW);
         accountsRepository.save(account);
-        return true;
     }
 
 

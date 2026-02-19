@@ -1,5 +1,6 @@
 package com.eazybytes.accounts.mapper;
 
+import com.eazybytes.accounts.command.event.AccountUpdatedEvent;
 import com.eazybytes.accounts.dto.AccountsDto;
 import com.eazybytes.accounts.entity.Accounts;
 
@@ -17,6 +18,12 @@ public class AccountsMapper {
     public static Accounts mapToAccounts(AccountsDto accountsDto, Accounts accounts) {
         accounts.setAccountType(accountsDto.getAccountType());
         accounts.setBranchAddress(accountsDto.getBranchAddress());
+        return accounts;
+    }
+
+    public static Accounts mapToEventUpdateAccounts(AccountUpdatedEvent accountUpdatedEvent, Accounts accounts) {
+        accounts.setAccountType(accountUpdatedEvent.getAccountType());
+        accounts.setBranchAddress(accountUpdatedEvent.getBranchAddress());
         return accounts;
     }
 

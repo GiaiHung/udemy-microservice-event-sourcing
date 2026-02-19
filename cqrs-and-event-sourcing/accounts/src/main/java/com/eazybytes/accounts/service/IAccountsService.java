@@ -1,6 +1,8 @@
 package com.eazybytes.accounts.service;
 
+import com.eazybytes.accounts.command.event.AccountUpdatedEvent;
 import com.eazybytes.accounts.dto.AccountsDto;
+import com.eazybytes.accounts.entity.Accounts;
 
 public interface IAccountsService {
 
@@ -8,7 +10,7 @@ public interface IAccountsService {
      *
      * @param mobileNumber - Input Mobile Number
      */
-    void createAccount(String mobileNumber);
+    void createAccount(Accounts accounts);
 
     /**
      *
@@ -20,16 +22,13 @@ public interface IAccountsService {
     /**
      *
      * @param accountsDto - AccountsDto Object
-     * @return boolean indicating if the update of Account details is successful or not
      */
-    boolean updateAccount(AccountsDto accountsDto);
+    void updateAccount(AccountUpdatedEvent accountUpdatedEvent);
 
     /**
-     *
      * @param accountNumber - Input Account Number
-     * @return boolean indicating if the delete of Account details is successful or not
      */
-    boolean deleteAccount(Long accountNumber);
+    void deleteAccount(Long accountNumber);
 
 
 }
