@@ -11,6 +11,7 @@ import com.eazybytes.accounts.dto.AccountsDto;
 import com.eazybytes.accounts.entity.Accounts;
 import com.eazybytes.accounts.service.IAccountsService;
 import lombok.RequiredArgsConstructor;
+import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
+@ProcessingGroup("account-group")
 public class AccountProjection {
 
     private final IAccountsService accountsService;
@@ -34,7 +36,8 @@ public class AccountProjection {
 
     @EventHandler
     public void on(AccountUpdatedEvent accountUpdatedEvent) {
-        accountsService.updateAccount(accountUpdatedEvent);
+        throw new RuntimeException("Something wrong happened");
+        // accountsService.updateAccount(accountUpdatedEvent);
     }
 
     @EventHandler
