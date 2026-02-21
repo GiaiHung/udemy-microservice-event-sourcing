@@ -9,7 +9,10 @@ import com.eazybytes.cards.exception.ResourceNotFoundException;
 import com.eazybytes.cards.mapper.CardsMapper;
 import com.eazybytes.cards.repository.CardsRepository;
 import com.eazybytes.cards.service.ICardsService;
+import com.eazybytes.common.event.CardDataChangedEvent;
 import lombok.AllArgsConstructor;
+import org.axonframework.modelling.command.AggregateLifecycle;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -70,6 +73,11 @@ public class CardsServiceImpl implements ICardsService {
                 );
         card.setActiveSw(CardsConstants.IN_ACTIVE_SW);
         cardsRepository.save(card);
+
+        CardDataChangedEvent cardDataChangedEvent = new CardDataChangedEvent();
+        BeanUtils.copyProperties(card, cardDataChangedEvent);
+        AggregateLifecycle.apply(cardDataChangedEvent);
+
         return true;
     }
 
