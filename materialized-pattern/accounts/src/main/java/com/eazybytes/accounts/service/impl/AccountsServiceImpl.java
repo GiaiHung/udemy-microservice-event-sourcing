@@ -9,7 +9,10 @@ import com.eazybytes.accounts.exception.ResourceNotFoundException;
 import com.eazybytes.accounts.mapper.AccountsMapper;
 import com.eazybytes.accounts.repository.AccountsRepository;
 import com.eazybytes.accounts.service.IAccountsService;
+import com.eazybytes.common.event.AccountDataChangedEvent;
 import lombok.AllArgsConstructor;
+import org.axonframework.modelling.command.AggregateLifecycle;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -72,6 +75,11 @@ public class AccountsServiceImpl  implements IAccountsService {
         );
         account.setActiveSw(AccountsConstants.IN_ACTIVE_SW);
         accountsRepository.save(account);
+
+        AccountDataChangedEvent accountDataChangedEvent = new AccountDataChangedEvent();
+        BeanUtils.copyProperties(account, accountDataChangedEvent);
+        AggregateLifecycle.apply(accountDataChangedEvent);
+
         return true;
     }
 
