@@ -1,5 +1,6 @@
 package com.eazybytes.customer.command.aggregate;
 
+import com.eazybytes.common.event.CustomerDataChangedEvent;
 import com.eazybytes.customer.command.CreateCustomerCommand;
 import com.eazybytes.customer.command.DeleteCustomerCommand;
 import com.eazybytes.customer.command.UpdateCustomerCommand;
@@ -17,6 +18,7 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Bean;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,15 +39,13 @@ public class CustomerAggregate {
 
     @CommandHandler
     public CustomerAggregate(CreateCustomerCommand createCustomerCommand, CustomerRepository customerRepository) {
-        /*Optional<Customer> optionalCustomer = customerRepository.
-                findByMobileNumberAndActiveSw(createCustomerCommand.getMobileNumber(), true);
-        if (optionalCustomer.isPresent()) {
-            throw new CustomerAlreadyExistsException("Customer already registered with given mobileNumber "
-                    + createCustomerCommand.getMobileNumber());
-        }*/
         CustomerCreatedEvent customerCreatedEvent = new CustomerCreatedEvent();
         BeanUtils.copyProperties(createCustomerCommand, customerCreatedEvent);
-        AggregateLifecycle.apply(customerCreatedEvent);
+
+        CustomerDataChangedEvent customerDataChangedEvent = new CustomerDataChangedEvent();
+        BeanUtils.copyProperties(createCustomerCommand, customerDataChangedEvent);
+
+        AggregateLifecycle.apply(customerCreatedEvent).andThenApply(() -> customerDataChangedEvent);
     }
 
     @EventSourcingHandler
@@ -65,7 +65,11 @@ public class CustomerAggregate {
         }*/
         CustomerUpdatedEvent customerUpdatedEvent = new CustomerUpdatedEvent();
         BeanUtils.copyProperties(updateCustomerCommand, customerUpdatedEvent);
-        AggregateLifecycle.apply(customerUpdatedEvent);
+
+        CustomerDataChangedEvent customerDataChangedEvent = new CustomerDataChangedEvent();
+        BeanUtils.copyProperties(updateCustomerCommand, customerDataChangedEvent);
+
+        AggregateLifecycle.apply(customerUpdatedEvent).andThen(() -> AggregateLifecycle.apply(customerDataChangedEvent));
     }
 
     @EventSourcingHandler
