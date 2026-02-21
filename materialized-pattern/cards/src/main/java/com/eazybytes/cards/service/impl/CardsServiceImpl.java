@@ -11,6 +11,7 @@ import com.eazybytes.cards.repository.CardsRepository;
 import com.eazybytes.cards.service.ICardsService;
 import com.eazybytes.common.event.CardDataChangedEvent;
 import lombok.AllArgsConstructor;
+import org.axonframework.eventhandling.gateway.EventGateway;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ import java.util.Optional;
 public class CardsServiceImpl implements ICardsService {
 
     private CardsRepository cardsRepository;
+
+    private final EventGateway eventGateway;
 
     /**
      * @param card - Cards object
@@ -76,7 +79,7 @@ public class CardsServiceImpl implements ICardsService {
 
         CardDataChangedEvent cardDataChangedEvent = new CardDataChangedEvent();
         BeanUtils.copyProperties(card, cardDataChangedEvent);
-        AggregateLifecycle.apply(cardDataChangedEvent);
+        eventGateway.publish(cardDataChangedEvent);
 
         return true;
     }

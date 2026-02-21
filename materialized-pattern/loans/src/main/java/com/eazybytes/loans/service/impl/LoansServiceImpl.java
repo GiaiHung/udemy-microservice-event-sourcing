@@ -11,6 +11,7 @@ import com.eazybytes.loans.mapper.LoansMapper;
 import com.eazybytes.loans.repository.LoansRepository;
 import com.eazybytes.loans.service.ILoansService;
 import lombok.AllArgsConstructor;
+import org.axonframework.eventhandling.gateway.EventGateway;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ import java.util.Optional;
 public class LoansServiceImpl implements ILoansService {
 
     private LoansRepository loansRepository;
+
+    private final EventGateway eventGateway;
 
     /**
      * @param loan - Loans object
@@ -77,7 +80,7 @@ public class LoansServiceImpl implements ILoansService {
 
         LoanDataChangedEvent loanDataChangedEvent = new LoanDataChangedEvent();
         BeanUtils.copyProperties(loan, loanDataChangedEvent);
-        AggregateLifecycle.apply(loanDataChangedEvent);
+        eventGateway.publish(loanDataChangedEvent);
 
         return true;
     }

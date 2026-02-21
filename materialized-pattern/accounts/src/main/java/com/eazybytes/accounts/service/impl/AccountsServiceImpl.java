@@ -11,6 +11,7 @@ import com.eazybytes.accounts.repository.AccountsRepository;
 import com.eazybytes.accounts.service.IAccountsService;
 import com.eazybytes.common.event.AccountDataChangedEvent;
 import lombok.AllArgsConstructor;
+import org.axonframework.eventhandling.gateway.EventGateway;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ import java.util.Random;
 public class AccountsServiceImpl  implements IAccountsService {
 
     private AccountsRepository accountsRepository;
+
+    private final EventGateway eventGateway;
 
     /**
      * @param account - Accounts
@@ -78,7 +81,7 @@ public class AccountsServiceImpl  implements IAccountsService {
 
         AccountDataChangedEvent accountDataChangedEvent = new AccountDataChangedEvent();
         BeanUtils.copyProperties(account, accountDataChangedEvent);
-        AggregateLifecycle.apply(accountDataChangedEvent);
+        eventGateway.publish(accountDataChangedEvent);
 
         return true;
     }
