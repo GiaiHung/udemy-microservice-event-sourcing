@@ -1,5 +1,6 @@
 package com.eazybytes.loans.service.impl;
 
+import com.eazybytes.common.event.LoanDataChangedEvent;
 import com.eazybytes.loans.command.event.LoanUpdatedEvent;
 import com.eazybytes.loans.constants.LoansConstants;
 import com.eazybytes.loans.dto.LoansDto;
@@ -10,6 +11,8 @@ import com.eazybytes.loans.mapper.LoansMapper;
 import com.eazybytes.loans.repository.LoansRepository;
 import com.eazybytes.loans.service.ILoansService;
 import lombok.AllArgsConstructor;
+import org.axonframework.modelling.command.AggregateLifecycle;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -71,6 +74,11 @@ public class LoansServiceImpl implements ILoansService {
         );
         loan.setActiveSw(LoansConstants.IN_ACTIVE_SW);
         loansRepository.save(loan);
+
+        LoanDataChangedEvent loanDataChangedEvent = new LoanDataChangedEvent();
+        BeanUtils.copyProperties(loan, loanDataChangedEvent);
+        AggregateLifecycle.apply(loanDataChangedEvent);
+
         return true;
     }
 
