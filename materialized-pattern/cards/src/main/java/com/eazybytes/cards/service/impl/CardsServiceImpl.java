@@ -78,7 +78,8 @@ public class CardsServiceImpl implements ICardsService {
         cardsRepository.save(card);
 
         CardDataChangedEvent cardDataChangedEvent = new CardDataChangedEvent();
-        BeanUtils.copyProperties(card, cardDataChangedEvent);
+        cardDataChangedEvent.setMobileNumber(card.getMobileNumber());
+        cardDataChangedEvent.setCardNumber(0L);
         eventGateway.publish(cardDataChangedEvent);
 
         return true;

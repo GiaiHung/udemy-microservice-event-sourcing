@@ -62,9 +62,8 @@ public class CustomerServiceImpl implements ICustomerService {
         customerRepository.save(customer);
 
         CustomerDataChangedEvent customerDataChangedEvent = new CustomerDataChangedEvent();
-        customerDataChangedEvent.setName(customer.getName());
         customerDataChangedEvent.setMobileNumber(customer.getMobileNumber());
-        customerDataChangedEvent.setActiveSw(customerDataChangedEvent.isActiveSw());
+        customerDataChangedEvent.setActiveSw(CustomerConstants.IN_ACTIVE_SW);
         eventGateway.publish(customerDataChangedEvent);
 
         return true;

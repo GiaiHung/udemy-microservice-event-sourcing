@@ -80,7 +80,8 @@ public class AccountsServiceImpl  implements IAccountsService {
         accountsRepository.save(account);
 
         AccountDataChangedEvent accountDataChangedEvent = new AccountDataChangedEvent();
-        BeanUtils.copyProperties(account, accountDataChangedEvent);
+        accountDataChangedEvent.setMobileNumber(account.getMobileNumber());
+        accountDataChangedEvent.setAccountNumber(0L);
         eventGateway.publish(accountDataChangedEvent);
 
         return true;

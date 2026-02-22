@@ -79,7 +79,8 @@ public class LoansServiceImpl implements ILoansService {
         loansRepository.save(loan);
 
         LoanDataChangedEvent loanDataChangedEvent = new LoanDataChangedEvent();
-        BeanUtils.copyProperties(loan, loanDataChangedEvent);
+        loanDataChangedEvent.setMobileNumber(loan.getMobileNumber());
+        loanDataChangedEvent.setLoanNumber(0L);
         eventGateway.publish(loanDataChangedEvent);
 
         return true;
